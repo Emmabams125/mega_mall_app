@@ -1,8 +1,10 @@
 import 'package:ecommerce_app/core/models/category_model.dart';
 import 'package:ecommerce_app/screens/dashboard/home/category/category_viewmodel.dart';
+import 'package:ecommerce_app/screens/dashboard/home/product_detail/product_detail_screen.dart';
 import 'package:ecommerce_app/screens/dashboard/home/widgets/product_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 
 class CategoryScreen extends StatelessWidget {
@@ -17,79 +19,111 @@ class CategoryScreen extends StatelessWidget {
           CategoryViewModel()..fetchProducts(categoryId: category.id),
       child: Scaffold(
         backgroundColor: Colors.grey.shade100,
-        body: CustomScrollView(
-          slivers: [
-            SliverAppBar(
-              expandedHeight: 220.h,
-              pinned: true,
-              backgroundColor: Colors.white,
-              leading: GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: Container(
-                  margin: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.85),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.arrow_back, color: Colors.black),
-                ),
-              ),
-              flexibleSpace: FlexibleSpaceBar(
-                title: Text(
-                  category.name,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18.sp,
-                    shadows: const [
-                      Shadow(color: Colors.black54, blurRadius: 6),
-                    ],
-                  ),
-                ),
-                background: Stack(
-                  fit: StackFit.expand,
+        body: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              /// HEADER SECTION
+              60.verticalSpace,
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Image.network(
-                      category.image,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        color: Colors.blue.shade100,
-                        child: const Icon(
-                          Icons.category,
-                          size: 80,
-                          color: Colors.blue,
-                        ),
+                    InkWell(
+                      onTap: () => Navigator.pop(context),
+                      child: SvgPicture.asset(
+                        'assets/svgs/vector.svg',
+                        height: 20,
                       ),
                     ),
-                    
-                    const DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [Colors.transparent, Colors.black54],
-                        ),
+                    Text(
+                      'Category',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18.sp,
                       ),
                     ),
+                    Image.asset('assets/images/cart.png', height: 20.h),
                   ],
                 ),
               ),
-            ),
 
-            // Products grid
-            Consumer<CategoryViewModel>(
-              builder: (context, vm, _) {
-                if (vm.isLoading && vm.products.isEmpty) {
-                  return const SliverFillRemaining(
-                    child: Center(child: CircularProgressIndicator()),
-                  );
-                }
+              16.verticalSpace,
 
-                if (vm.error != null && vm.products.isEmpty) {
-                  return SliverFillRemaining(
-                    child: Center(
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Text(
+                  category.name,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w900,
+                    fontSize: 24.sp,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                child: TextField(
+                  decoration: InputDecoration(
+                    prefixIcon: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: SvgPicture.asset(
+                        'assets/svgs/search.svg',
+                        width: 20,
+                        height: 20,
+                        fit: BoxFit.scaleDown,
+                      ),
+                    ),
+                    hintText: "Search Products name",
+                    hintStyle: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey,
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey.shade100,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+              ),
+
+              20.verticalSpace,
+
+              /// Image
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Container(
+                  height: 200.h,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12.r),
+                    gradient: const LinearGradient(
+                      colors: [Colors.transparent, Colors.black54],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12.r),
+                    child: Image.network(
+                      category.image,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                    ),
+                  ),
+                ),
+              ),
+
+              /// PRODUCTS
+              Consumer<CategoryViewModel>(
+                builder: (context, vm, _) {
+                  if (vm.error != null && vm.products.isEmpty) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
                             vm.error!,
@@ -106,67 +140,80 @@ class CategoryScreen extends StatelessWidget {
                           ),
                         ],
                       ),
+                    );
+                  }
+
+                  if (vm.products.isEmpty) {
+                    return const Padding(
+                      padding: EdgeInsets.all(40),
+                      child: Center(
+                        child: Text('No products in this category yet.'),
+                      ),
+                    );
+                  }
+
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: GridView.builder(
+                      itemCount: vm.products.length,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 12,
+                            mainAxisSpacing: 12,
+                            childAspectRatio: 0.72,
+                          ),
+                      itemBuilder: (context, index) {
+                        if (index == vm.products.length - 1 &&
+                            vm.hasMore &&
+                            !vm.isLoading) {
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            vm.fetchProducts(categoryId: category.id);
+                          });
+                        }
+
+                        final product = vm.products[index];
+
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    ProductDetailsScreen(product: product),
+                              ),
+                            );
+                          },
+                          child: ProductTile(
+                            title: product.name,
+                            imagePath: product.image,
+                            price: '₦${product.price.toStringAsFixed(0)}',
+                            rating: 4.5,
+                            isNetworkImage: true,
+                          ),
+                        );
+                      },
                     ),
                   );
-                }
+                },
+              ),
 
-                if (vm.products.isEmpty) {
-                  return const SliverFillRemaining(
-                    child: Center(
-                      child: Text('No products in this category yet.'),
-                    ),
-                  );
-                }
-
-                return SliverPadding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 16,
-                  ),
-                  sliver: SliverGrid(
-                    delegate: SliverChildBuilderDelegate((context, index) {
-                      if (index == vm.products.length - 1 && vm.hasMore) {
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          vm.fetchProducts(categoryId: category.id);
-                        });
-                      }
-
-                      final product = vm.products[index];
-                      return ProductTile(
-                        title: product.name,
-                        imagePath: product.image,
-                        price: '₦${product.price.toStringAsFixed(0)}',
-                        rating: 4.5,
-                        isNetworkImage: true,
-                      );
-                    }, childCount: vm.products.length),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                          childAspectRatio: 0.72,
-                        ),
-                  ),
-                );
-              },
-            ),
-
-            // Bottom loading indicator for pagination
-            Consumer<CategoryViewModel>(
-              builder: (context, vm, _) {
-                if (vm.isLoading && vm.products.isNotEmpty) {
-                  return const SliverToBoxAdapter(
-                    child: Padding(
+              /// PAGINATION LOADER
+              Consumer<CategoryViewModel>(
+                builder: (context, vm, _) {
+                  if (vm.isLoading && vm.products.isNotEmpty) {
+                    return const Padding(
                       padding: EdgeInsets.all(16),
                       child: Center(child: CircularProgressIndicator()),
-                    ),
-                  );
-                }
-                return const SliverToBoxAdapter(child: SizedBox.shrink());
-              },
-            ),
-          ],
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );

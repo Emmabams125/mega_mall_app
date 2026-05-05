@@ -1,9 +1,12 @@
+import 'dart:async';
 import 'dart:developer' as dev;
 import 'dart:io';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
+import 'package:ecommerce_app/app/locator.dart';
 import 'package:ecommerce_app/core/enums/http_method.dart';
 import 'package:ecommerce_app/core/models/app_error.dart';
+import 'package:ecommerce_app/core/services/storage_service/storage_service.dart';
 
 class ApiService {
   final Dio _dio = Dio(
@@ -15,18 +18,21 @@ class ApiService {
     ),
   );
 
+  final StorageService _storage = locator<StorageService>();
+
   Future<Either<AppError, T>> makeRequest<T>({
     required String url,
     required HttpMethod method,
     Map<String, dynamic>? data,
     Map<String, dynamic>? queryParams,
-    String? token,
     required T Function(dynamic json) fromJson,
   }) async {
     final requestId = DateTime.now().millisecondsSinceEpoch.toString();
     final fullUrl = _dio.options.baseUrl + url;
 
-    // Log request details
+    // 🔐 AUTO TOKEN (NO MANUAL PASSING ANYMORE)
+    final token = _storage.getToken();
+
     dev.log(
       '🚀 API REQUEST [$requestId]: ${method.name.toUpperCase()} $fullUrl',
       name: 'API',
@@ -41,15 +47,18 @@ class ApiService {
     }
 
     if (token != null) {
-      dev.log('🔑 AUTH TOKEN [$requestId]: Present', name: 'API');
+      dev.log('🔑 AUTH TOKEN ATTACHED [$requestId]', name: 'API');
     }
 
     try {
-      Response response;
-
       final options = Options(
-        headers: {if (token != null) "Authorization": "Bearer $token"},
+        headers: {
+          "Content-Type": "application/json",
+          if (token != null) "Authorization": "Bearer $token",
+        },
       );
+
+      Response response;
 
       switch (method) {
         case HttpMethod.get:
@@ -77,16 +86,15 @@ class ApiService {
           break;
       }
 
-      // Log successful response
       dev.log(
-        '✅ API RESPONSE [$requestId]: ${response.statusCode} ${response.statusMessage}',
+        '✅ API RESPONSE [$requestId]: ${response.statusCode}',
         name: 'API',
       );
+
       dev.log('📥 RESPONSE DATA [$requestId]: ${response.data}', name: 'API');
 
       return Right(fromJson(response.data));
     } on DioException catch (e) {
-      // Log Dio error details
       dev.log(
         '❌ DIO ERROR [$requestId]: ${e.type} - ${e.message}',
         name: 'API',
@@ -110,7 +118,6 @@ class ApiService {
         ),
       );
     } on SocketException catch (e) {
-      // Log socket error
       dev.log(
         '🔌 SOCKET ERROR [$requestId]: ${e.message}',
         name: 'API',
@@ -121,7 +128,6 @@ class ApiService {
         AppError(errorType: AppErrorType.network, message: e.message),
       );
     } catch (e) {
-      // Log general error
       dev.log('💥 GENERAL ERROR [$requestId]: $e', name: 'API', error: e);
 
       return Left(AppError(errorType: AppErrorType.api, message: e.toString()));

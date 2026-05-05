@@ -51,14 +51,20 @@ class StorageService with ListenableServiceMixin {
 
   // ---------------------- STRING ----------------------
   Future<void> addString(String key, String value) async {
-    dev.log('💾 SAVING STRING: $key = ${value.length > 50 ? "${value.substring(0, 50)}..." : value}', name: 'STORAGE');
+    dev.log(
+      '💾 SAVING STRING: $key = ${value.length > 50 ? "${value.substring(0, 50)}..." : value}',
+      name: 'STORAGE',
+    );
     await _stringBox?.put(key, value);
     notifyListeners();
   }
 
   String? getString(String key, {String defaultValue = ''}) {
     final value = _stringBox?.get(key, defaultValue: defaultValue);
-    dev.log('📖 GETTING STRING: $key = ${value != null && value.length > 50 ? "${value.substring(0, 50)}..." : value}', name: 'STORAGE');
+    dev.log(
+      '📖 GETTING STRING: $key = ${value != null && value.length > 50 ? "${value.substring(0, 50)}..." : value}',
+      name: 'STORAGE',
+    );
     return value;
   }
 
@@ -159,4 +165,32 @@ class StorageService with ListenableServiceMixin {
     notifyListeners();
     dev.log('✅ All storage data cleared', name: 'STORAGE');
   }
+
+  /// SAVE TOKEN
+  Future<void> saveToken(String token) async {
+    dev.log('🔐 SAVING TOKEN', name: 'STORAGE');
+    await _stringBox?.put(StorageKeys.token, token);
+    notifyListeners();
+  }
+
+  /// GET TOKEN
+  String? getToken() {
+    final token = _stringBox?.get(StorageKeys.token);
+    dev.log(
+      '🔐 GETTING TOKEN: ${token != null ? "FOUND" : "NULL"}',
+      name: 'STORAGE',
+    );
+    return token;
+  }
+
+  /// REMOVE TOKEN (logout)
+  Future<void> clearToken() async {
+    dev.log('🧹 REMOVING TOKEN', name: 'STORAGE');
+    await _stringBox?.delete(StorageKeys.token);
+    notifyListeners();
+  }
+}
+
+class StorageKeys {
+  static const String token = "token";
 }

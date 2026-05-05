@@ -1,6 +1,10 @@
 import 'dart:developer' as dev;
+import 'package:ecommerce_app/core/data_source/cart_source/cart_remote_data_source.dart';
+import 'package:ecommerce_app/core/data_source/cart_source/cart_remote_data_source_impl.dart';
 import 'package:ecommerce_app/core/data_source/category_remote/category_remote_data_source.dart';
 import 'package:ecommerce_app/core/data_source/category_remote/category_remote_data_source_impl.dart';
+import 'package:ecommerce_app/core/data_source/wishlist/wishlis_data_source_impl.dart';
+import 'package:ecommerce_app/core/data_source/wishlist/wishlist_data_source.dart';
 import 'package:ecommerce_app/core/services/api/api_service.dart';
 import 'package:ecommerce_app/core/services/storage_service/storage_service.dart';
 import 'package:ecommerce_app/core/services/utility_service.dart';
@@ -30,6 +34,13 @@ Future<void> setupLocator() async {
   locator.registerLazySingleton<CategoryRemoteDataSource>(
     () => CategoryRemoteDataSourceImpl(locator<ApiService>()),
   );
+  locator.registerLazySingleton<CartRemoteDataSource>(
+  () => CartRemoteDataSourceImpl(locator()),
+);
+
+locator.registerLazySingleton<WishlistRemoteDataSource>(
+  () => WishlistRemoteDataSourceImpl(locator()),
+);
 
   //---------------- INIT ----------------//
 

@@ -18,11 +18,14 @@ class CategoryViewModel extends ChangeNotifier {
   int _currentPage = 1;
   bool _hasMore = true;
   bool get hasMore => _hasMore;
+  bool _isFetchingMore = false;
 
   Future<void> fetchProducts({
     required int categoryId,
     bool refresh = false,
   }) async {
+    if (_isFetchingMore) return; // 🚨 IMPORTANT
+
     if (refresh) {
       _currentPage = 1;
       _products = [];
@@ -31,6 +34,7 @@ class CategoryViewModel extends ChangeNotifier {
 
     if (!_hasMore) return;
 
+    _isFetchingMore = true;
     _isLoading = true;
     error = null;
     notifyListeners();
@@ -44,6 +48,7 @@ class CategoryViewModel extends ChangeNotifier {
       (err) {
         error = err.message;
         _isLoading = false;
+        _isFetchingMore = false;
         notifyListeners();
       },
       (data) {
@@ -53,7 +58,9 @@ class CategoryViewModel extends ChangeNotifier {
           _products.addAll(data);
           _currentPage++;
         }
+
         _isLoading = false;
+        _isFetchingMore = false;
         notifyListeners();
       },
     );

@@ -1,5 +1,5 @@
-
 import 'package:ecommerce_app/core/models/category_model.dart';
+import 'package:ecommerce_app/screens/dashboard/cart/cart_view.dart';
 import 'package:ecommerce_app/screens/dashboard/home/category/category_screen.dart';
 import 'package:ecommerce_app/screens/dashboard/home/home_viewmodel.dart';
 import 'package:ecommerce_app/screens/dashboard/home/widgets/category_item.dart';
@@ -40,7 +40,20 @@ class HomeScreen extends StatelessWidget {
                     children: [
                       Image.asset('assets/images/noti.png', height: 20.h),
                       20.horizontalSpace,
-                      Image.asset('assets/images/cart.png', height: 20.h),
+                      InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const CartScreen(),
+                            ),
+                          );
+                        },
+                        child: Image.asset(
+                          'assets/images/cart.png',
+                          height: 20.h,
+                        ),
+                      ),
                     ],
                   ),
                 ],
@@ -63,8 +76,10 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ),
                     hintText: "Search Products name",
-                    hintStyle:
-                        const TextStyle(fontSize: 14, color: Colors.grey),
+                    hintStyle: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey,
+                    ),
                     filled: true,
                     fillColor: Colors.grey.shade100,
                     border: OutlineInputBorder(
@@ -79,9 +94,8 @@ class HomeScreen extends StatelessWidget {
               18.verticalSpace,
               Column(
                 children: [
-                  // ── Categories ──────────────────────────────────────────
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -95,10 +109,7 @@ class HomeScreen extends StatelessWidget {
                         ),
                         Text(
                           'See All',
-                          style: TextStyle(
-                            fontSize: 14.sp,
-                            color: Colors.blue,
-                          ),
+                          style: TextStyle(fontSize: 14.sp, color: Colors.blue),
                         ),
                       ],
                     ),
@@ -127,28 +138,35 @@ class HomeScreen extends StatelessWidget {
 
                       return SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
-                        padding:
-                            const EdgeInsets.symmetric(horizontal: 16),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Row(
-                          children: vm.categories.map((category) {
-                            return Padding(
-                              padding: const EdgeInsets.only(right: 20),
-                              child: GestureDetector(
-                                onTap: () => _navigateToCategory(
-                                    context, category),
-                                child: CategoryItem(
-                                  title: category.name,
-                                  imageUrl: category.image,
+                          children: List.generate(vm.categories.length, (
+                            index,
+                          ) {
+                            final category = vm.categories[index];
+
+                            return Row(
+                              children: [
+                                GestureDetector(
+                                  onTap: () =>
+                                      _navigateToCategory(context, category),
+                                  child: CategoryItem(
+                                    title: category.name,
+                                    imageUrl: category.image,
+                                  ),
                                 ),
-                              ),
+
+                                if (index != vm.categories.length - 1)
+                                  const SizedBox(width: 40),
+                              ],
                             );
-                          }).toList(),
+                          }),
                         ),
                       );
                     },
                   ),
 
-                  // ── Featured Products ────────────────────────────────────
+                  // Featured Products 
                   40.verticalSpace,
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -165,10 +183,7 @@ class HomeScreen extends StatelessWidget {
                         ),
                         Text(
                           'See All',
-                          style: TextStyle(
-                            fontSize: 14.sp,
-                            color: Colors.blue,
-                          ),
+                          style: TextStyle(fontSize: 14.sp, color: Colors.blue),
                         ),
                       ],
                     ),
@@ -216,8 +231,10 @@ class HomeScreen extends StatelessWidget {
                   Container(
                     margin: const EdgeInsets.symmetric(horizontal: 8),
                     padding: const EdgeInsets.all(16),
-                    child: Image.asset('assets/images/ban1.png',
-                        fit: BoxFit.cover),
+                    child: Image.asset(
+                      'assets/images/ban1.png',
+                      fit: BoxFit.cover,
+                    ),
                   ),
 
                   20.verticalSpace,
@@ -229,8 +246,10 @@ class HomeScreen extends StatelessWidget {
                   Container(
                     width: double.infinity,
                     margin: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Image.asset('assets/images/Ban2.png',
-                        fit: BoxFit.cover),
+                    child: Image.asset(
+                      'assets/images/Ban2.png',
+                      fit: BoxFit.cover,
+                    ),
                   ),
 
                   40.verticalSpace,
@@ -251,8 +270,7 @@ class HomeScreen extends StatelessWidget {
                   40.verticalSpace,
                   sectionHeader('Latest News'),
                   newsItem(
-                    title:
-                        "Philosophy That Addresses Topics Such As Goodness",
+                    title: "Philosophy That Addresses Topics Such As Goodness",
                     image: 'assets/images/news1.png',
                   ),
                   newsItem(
@@ -261,8 +279,7 @@ class HomeScreen extends StatelessWidget {
                     image: 'assets/images/news2.png',
                   ),
                   newsItem(
-                    title:
-                        "Tips Merawat Bodi Mobil agar Tidak Terlihat Kusam",
+                    title: "Tips Merawat Bodi Mobil agar Tidak Terlihat Kusam",
                     image: 'assets/images/news3.png',
                   ),
 
@@ -289,9 +306,7 @@ class HomeScreen extends StatelessWidget {
   void _navigateToCategory(BuildContext context, CategoryModel category) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => CategoryScreen(category: category),
-      ),
+      MaterialPageRoute(builder: (_) => CategoryScreen(category: category)),
     );
   }
 }
@@ -304,9 +319,10 @@ Widget sectionHeader(String title) {
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(title,
-            style:
-                const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        Text(
+          title,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
         const Text('See All', style: TextStyle(color: Colors.blue)),
       ],
     ),
@@ -344,11 +360,12 @@ Widget productItem(String image, bool isSale) {
             top: 10,
             left: 10,
             child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               color: Colors.red,
-              child: const Text('SALE',
-                  style: TextStyle(color: Colors.white, fontSize: 10)),
+              child: const Text(
+                'SALE',
+                style: TextStyle(color: Colors.white, fontSize: 10),
+              ),
             ),
           ),
       ],
